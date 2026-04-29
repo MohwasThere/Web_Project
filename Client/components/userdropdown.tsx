@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {useRouter} from "next/navigation";
-import { LogOut } from "lucide-react";
 import Navitems from "./navitems";
+import { LogOut } from "lucide-react";
 
 const Userdropdown=()=>
 {
@@ -23,7 +23,7 @@ const Userdropdown=()=>
         router.push("/sign-in");
     }
 
-    const user={name:'john',email:"mh79861@gmail"}
+    const user={name:'Mahmoud',email:"mh79861@gmail"}
     return(
         <DropdownMenu>
         {/* We style the Trigger directly to look like your Ghost button */}
