@@ -1,17 +1,16 @@
-import  Link  from "next/link"
+import Link from "next/link";
 
-const Footerlink=({text,linkText,href}:FooterLinkProps)=>{
+const Footerlink = ({ text, linkText, href }: FooterLinkProps) => {
+  return (
+    <div className="text-center pt-2">
+      <p className="text-sm text-gray-500">
+        {text}{" "}
+        <Link href={href} className="footer-link">
+          {linkText}
+        </Link>
+      </p>
+    </div>
+  );
+};
 
-    return(
-        <div className="text-center pt-4">
-            <p className="text-sm text-gray-500">
-                {text}{' '}
-                <Link href={href} className="footer=link">
-                        {linkText}
-                </Link>
-            </p>
-        </div>
-    )
-
-}
-export default Footerlink
+export default Footerlink;

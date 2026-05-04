@@ -1,5 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,77 +7,103 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {useRouter} from "next/navigation";
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
 import Navitems from "./navitems";
-import { LogOut } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 
-const Userdropdown=()=>
-{
-    const router = useRouter();
+const Userdropdown = () => {
+  const router = useRouter();
 
-    const handleSignOut=()=>
-    {
-        router.push("/sign-in");
-    }
+  const handleSignOut = () => {
+    router.push("/sign-in");
+  };
 
-    const user={name:'Mahmoud',email:"mh79861@gmail"}
-    return(
-        <DropdownMenu>
-        {/* We style the Trigger directly to look like your Ghost button */}
-            <DropdownMenuTrigger className="flex items-center gap-3 text-gray-400 hover:text-yellow-500 bg-transparent border-none shadow-none cursor-pointer  rounded-md transition-colors">
-        
-                    <Avatar className="h-8 w-8">
-                        <AvatarImage src="https://github.com/shadcn.png" />
-                        <AvatarFallback className="bg-yellow-500 text-yellow-900 text-sm font-bold">
-                        {user.name[0]}
-                        </AvatarFallback>
-                    </Avatar>
-        
-                        <div className="hidden md:flex flex-col items-start text-left">
-                            <span className="text-base font-medium text-gray-400">
-                                {user.name}
-                            </span>
-                        </div>
+  // Placeholder — replace with real user data from your auth context
+  const user = { name: "Mahmoud", email: "mh79861@gmail.com" };
+  const initials = user.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
-            </DropdownMenuTrigger>
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className="flex items-center gap-2.5 text-gray-400 hover:text-gray-200
+                   bg-transparent border-none shadow-none cursor-pointer
+                   rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-700/50
+                   focus:outline-none"
+      >
+        <Avatar className="h-8 w-8 ring-2 ring-gray-700">
+          <AvatarImage src="https://github.com/shadcn.png" />
+          <AvatarFallback className="bg-yellow-500 text-gray-900 text-xs font-bold">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
 
-            <DropdownMenuContent className='text-gray-400'>
-                <DropdownMenuGroup>
-                <DropdownMenuLabel>
-                    <div className='flex relative items-center gap-3  py-2'>
-                       <Avatar className="h-10 w-10">
-                        <AvatarImage src="https://github.com/shadcn.png" />
-                        <AvatarFallback className="bg-yellow-500 text-yellow-900 text-sm font-bold">
-                        {user.name[0]}
-                        </AvatarFallback>
-                        </Avatar>
-                     <div className="flex flex-col">
-                            <span className="text-base font-medium text-gray-400">
-                                {user.name}
-                            </span>
-                            <span className='text-sm text-gray-500'>
-                                {user.email}
-                            </span>
-                        </div>
+        <div className="hidden md:flex flex-col items-start text-left">
+          <span className="text-sm font-medium text-gray-300 leading-none">
+            {user.name}
+          </span>
+        </div>
 
-                    </div>
-                </DropdownMenuLabel>
-                </DropdownMenuGroup>
-               <DropdownMenuSeparator className='bg-gray-600'/>
-               <DropdownMenuItem onClick={handleSignOut} className='text-gray-100 text-md font-medium focus:bg-transparent focus:text-yellow-500 transition-colors cusrsor-pointer'>
-                    <LogOut className="h-4 w-4 mr-2 hidden sm:block"/>
-                        Logout
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className='hidden sm:block bg-gray-600'/>
-                <nav className='sm:hidden'>
-                        <Navitems>
+        <ChevronDown className="h-3.5 w-3.5 text-gray-600 hidden md:block" />
+      </DropdownMenuTrigger>
 
-                        </Navitems>
-                </nav>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    )
-}
-export default Userdropdown
+      <DropdownMenuContent
+        className="bg-gray-800 border border-gray-700 text-gray-400 
+                   min-w-[200px] rounded-xl shadow-xl p-1"
+        align="end"
+        sideOffset={8}
+      >
+        {/* User info header */}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="px-3 py-2.5">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-9 w-9 ring-2 ring-gray-700">
+                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarFallback className="bg-yellow-500 text-gray-900 text-xs font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-semibold text-gray-200 truncate">
+                  {user.name}
+                </span>
+                <span className="text-xs text-gray-500 truncate">
+                  {user.email}
+                </span>
+              </div>
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator className="bg-gray-700 my-1" />
+
+        {/* Sign out */}
+        <DropdownMenuItem
+          onClick={handleSignOut}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium
+                     text-gray-300 rounded-lg cursor-pointer
+                     focus:bg-red-500/10 focus:text-red-400
+                     hover:bg-red-500/10 hover:text-red-400
+                     transition-colors"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign out
+        </DropdownMenuItem>
+
+        {/* Mobile nav — shown only on small screens */}
+        <DropdownMenuSeparator className="sm:hidden bg-gray-700 my-1" />
+        <nav className="sm:hidden px-1 pb-1">
+          <Navitems />
+        </nav>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export default Userdropdown;

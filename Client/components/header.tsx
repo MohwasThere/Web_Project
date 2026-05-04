@@ -3,33 +3,30 @@ import Link from "next/link";
 import Image from "next/image";
 import Navitems from "./navitems";
 import Userdropdown from "./userdropdown";
- const Header=()=>
-{
-    return(
-        
-                    <header className="Sticky top-0 header">
-                        <div className="container header-wrapper">
 
-                            <Link href="/">
-                                        <Image 
-                                         src="/assets/icons/logo.svg" 
-                                            alt="Signalist logo" 
-                                            width={140} 
-                                             height={32} /* Fixed: changed [32] to {32} */
-                                            className="h-8 w-auto cursor-pointer" />
-                             </Link>
-                             <nav className="hidden sm:block">
-                                <Navitems>
+const Header = () => {
+  return (
+    <header className="header">
+      <div className="container header-wrapper">
+        <Link href="/" className="flex items-center shrink-0">
+          <Image
+            src="/assets/icons/logo.svg"
+            alt="Signalist logo"
+            width={120}
+            height={28}
+            className="h-7 w-auto cursor-pointer"
+            priority
+          />
+        </Link>
 
-                                </Navitems>
-                             </nav>
-                             <Userdropdown>
-                                
-                             </Userdropdown>
-                        </div>
+        <nav className="hidden sm:block">
+          <Navitems />
+        </nav>
 
-                    </header>
+        <Userdropdown />
+      </div>
+    </header>
+  );
+};
 
-    );
-}
-export default Header
+export default Header;
