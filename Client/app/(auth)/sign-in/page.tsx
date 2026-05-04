@@ -74,13 +74,13 @@ const SignIn = () => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="yellow-btn w-full !mt-6"
+          className="yellow-btn w-full mt-6"
         >
           {isSubmitting ? "Signing in…" : "Start Your Investing Journey →"}
         </Button>
 
         {/* Divider */}
-        <div className="flex items-center gap-3 !mt-5">
+        <div className="flex items-center gap-3 mt-5">
           <span className="flex-1 h-px bg-gray-700" />
           <span className="text-xs text-gray-600">or</span>
           <span className="flex-1 h-px bg-gray-700" />

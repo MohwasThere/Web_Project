@@ -286,7 +286,7 @@
            text-gray-900 font-semibold rounded-lg transition-colors;
   }
   .search-dialog {
-    @apply bg-gray-800 lg:min-w-[800px] border border-gray-700
+    @apply bg-gray-800 lg:min-w-200 border border-gray-700
            fixed top-10 left-1/2 -translate-x-1/2 translate-y-10
            shadow-2xl rounded-xl overflow-hidden;
   }
@@ -294,7 +294,7 @@
     @apply bg-gray-800 border-b border-gray-700 relative;
   }
   .search-list {
-    @apply bg-gray-800 max-h-[400px];
+    @apply bg-gray-800 max-h-100;
   }
   .search-list-indicator {
     @apply px-5 py-2;
@@ -447,7 +447,7 @@
     @apply text-xl font-semibold text-gray-100;
   }
   .alert-list {
-    @apply overflow-y-auto w-full max-h-[900px] rounded-xl flex
+    @apply overflow-y-auto w-full max-h-225 rounded-xl flex
            border border-gray-700 flex-col gap-3 bg-gray-800 p-3 flex-1;
   }
   .alert-empty {

@@ -55,7 +55,7 @@ const Userdropdown = () => {
 
       <DropdownMenuContent
         className="bg-gray-800 border border-gray-700 text-gray-400 
-                   min-w-[200px] rounded-xl shadow-xl p-1"
+                   min-w-50 rounded-xl shadow-xl p-1"
         align="end"
         sideOffset={8}
       >

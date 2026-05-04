@@ -21,7 +21,7 @@ const Navitems = () => {
               "text-sm transition-colors duration-150 relative py-1",
               "hover:text-yellow-400",
               isActive(href)
-                ? "text-gray-100 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:bg-yellow-500 after:rounded-full"
+                ? "text-gray-100 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-yellow-500 after:rounded-full"
                 : "text-gray-500",
             ].join(" ")}
           >

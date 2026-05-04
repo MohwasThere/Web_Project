@@ -182,7 +182,7 @@ const SignUp = () => {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="yellow-btn w-full !mt-6"
+          className="yellow-btn w-full mt-6"
         >
           {isSubmitting ? "Creating account…" : "Start Your Investing Journey →"}
         </Button>
