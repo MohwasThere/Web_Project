@@ -12,16 +12,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import Navitems from "./navitems";
 import { ChevronDown, LogOut } from "lucide-react";
+import { signOut } from "@/lib/actions/auth.actions";
 
-const Userdropdown = () => {
+const Userdropdown = ({user}:{user:User}) => {
   const router = useRouter();
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await signOut();
     router.push("/sign-in");
   };
 
-  // Placeholder — replace with real user data from your auth context
-  const user = { name: "Mahmoud", email: "mh79861@gmail.com" };
   const initials = user.name
     .split(" ")
     .map((n) => n[0])

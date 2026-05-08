@@ -4,7 +4,7 @@ import Image from "next/image";
 import Navitems from "./navitems";
 import Userdropdown from "./userdropdown";
 
-const Header = () => {
+const Header = ({user } : {user:User}) => {
   return (
     <header className="header">
       <div className="container header-wrapper">
@@ -23,7 +23,7 @@ const Header = () => {
           <Navitems />
         </nav>
 
-        <Userdropdown />
+        <Userdropdown user={user}/>
       </div>
     </header>
   );
