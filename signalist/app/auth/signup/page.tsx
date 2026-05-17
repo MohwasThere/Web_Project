@@ -3,10 +3,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function Signup() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,7 +21,7 @@ export default function Signup() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -33,10 +35,45 @@ export default function Signup() {
 
     setLoading(true);
 
-    setTimeout(() => {
-      toast.success("Account created successfully! Welcome to Signalist 🎉");
-      window.location.href = '/dashboard';
-    }, 1000);
+    try {
+      const response = await fetch('/api/auth/sign-up/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        const message = payload?.message ?? 'Unable to create account';
+        throw new Error(message);
+      }
+
+      const payload = await response.json().catch(() => null);
+      if (!payload?.user) {
+        throw new Error('Sign up failed. Please try again.');
+      }
+
+      await fetch('/api/email/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+        }),
+      }).catch(() => null);
+
+      toast.success('Account created successfully!');
+      router.push('/dashboard');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Sign up failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

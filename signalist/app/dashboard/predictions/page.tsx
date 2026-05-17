@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Star, TrendingUp, TrendingDown, Clock, Zap } from 'lucide-react';
 import { subscriptionFeatures, SubscriptionPlan } from '@/lib/subscription';
+import { useSubscription } from '@/app/context/SubscriptionContext';
 
 const mockPredictions = [
   { symbol: "NVDA", direction: "bullish", confidence: 89, target: "148.50", reason: "Strong AI demand and excellent earnings momentum" },
@@ -13,16 +14,12 @@ const mockPredictions = [
 ];
 
 export default function AIPredictionsPage() {
-  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>('Free');
+  const { currentPlan } = useSubscription() as { currentPlan: SubscriptionPlan };
   const [predictions, setPredictions] = useState<any[]>([]);
   const [usedToday, setUsedToday] = useState(0);
 
-  // Load current plan (you can connect this with real subscription later)
+  // Load used predictions
   useEffect(() => {
-    const savedPlan = localStorage.getItem('userPlan') as SubscriptionPlan || 'Free';
-    setCurrentPlan(savedPlan);
-
-    // Load used predictions
     const savedUsed = parseInt(localStorage.getItem('predictionsUsed') || '0');
     setUsedToday(savedUsed);
   }, []);
@@ -39,13 +36,6 @@ export default function AIPredictionsPage() {
     const newUsed = Math.min(features.maxPredictions, usedToday + newPreds.length);
     setUsedToday(newUsed);
     localStorage.setItem('predictionsUsed', newUsed.toString());
-  };
-
-  const upgradePlan = (plan: SubscriptionPlan) => {
-    localStorage.setItem('userPlan', plan);
-    setCurrentPlan(plan);
-    setUsedToday(0);
-    alert(`✅ Upgraded to ${plan} Plan!`);
   };
 
   return (

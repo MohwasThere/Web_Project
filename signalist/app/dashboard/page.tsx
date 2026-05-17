@@ -1,17 +1,18 @@
-
-'use client';
-
 import TradingViewWidget from "@/components/TradingViewWidget";
+import { getServerSession } from "@/lib/auth-session";
 import {
   MARKET_OVERVIEW_WIDGET_CONFIG,
   HEATMAP_WIDGET_CONFIG,
 } from "@/lib/constants";
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const session = await getServerSession();
+  const displayName = session?.user?.name ?? "Trader";
+
   return (
     <div className="p-8">
       <div className="mb-10">
-        <h1 className="text-4xl font-bold">Welcome back, Mazen 👋</h1>
+        <h1 className="text-4xl font-bold">Welcome back, {displayName} 👋</h1>
         <p className="text-zinc-400 mt-2">Here's what's happening in the market today</p>
       </div>
 

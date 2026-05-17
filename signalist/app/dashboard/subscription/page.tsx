@@ -3,6 +3,8 @@
 import { useSubscription } from '@/app/context/SubscriptionContext';
 import { Check, Crown } from 'lucide-react';
 
+type Plan = 'Free' | 'Basic' | 'Premium' | 'Pro';
+
 const plans = [
   { name: "Free", price: 0, period: "forever", popular: false },
   { name: "Basic", price: 9, period: "month", popular: false },
@@ -12,6 +14,10 @@ const plans = [
 
 export default function SubscriptionPage() {
   const { currentPlan, upgradePlan } = useSubscription();
+
+  const handleUpgrade = async (planName: Plan) => {
+    await upgradePlan(planName);
+  };
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white py-12">
@@ -73,7 +79,7 @@ export default function SubscriptionPage() {
                 </ul>
 
                 <button
-                  onClick={() => upgradePlan(plan.name as any)}
+                  onClick={() => void handleUpgrade(plan.name as Plan)}
                   disabled={isCurrent}
                   className={`w-full py-4 rounded-2xl font-semibold text-lg ${
                     isCurrent 

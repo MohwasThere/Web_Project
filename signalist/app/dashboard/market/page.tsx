@@ -1,19 +1,78 @@
 // app/dashboard/market/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TradingViewWidget from "@/components/TradingViewWidget";
 import { CANDLE_CHART_WIDGET_CONFIG } from "@/lib/constants";
+import { getLogoCandidates, normalizeTicker } from '@/lib/market/logos';
+
+function StockLogo({ name, symbol }: { name: string; symbol: string }) {
+  const [logoIndex, setLogoIndex] = useState(0);
+  const logoCandidates = getLogoCandidates(symbol);
+  const currentLogo = logoCandidates[logoIndex];
+
+  useEffect(() => {
+    setLogoIndex(0);
+  }, [symbol]);
+
+  if (!currentLogo) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-200">
+        {symbol.slice(0, 2)}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={currentLogo}
+      alt={`${name} logo`}
+      onError={() => setLogoIndex((prev) => prev + 1)}
+      className="w-8 h-8 rounded-full bg-zinc-900 ring-1 ring-zinc-700 p-1 object-contain"
+    />
+  );
+}
 
 export default function MarketPage() {
   const [symbol, setSymbol] = useState("NVDA");
   const [inputSymbol, setInputSymbol] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [searchResults, setSearchResults] = useState<Array<{ symbol: string; name: string; exchange: string }>>([]);
+
+  useEffect(() => {
+    const query = inputSymbol.trim();
+    if (!query) {
+      setSearchResults([]);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      const response = await fetch(`/api/market/search?query=${encodeURIComponent(query)}`, { cache: 'no-store' });
+      if (!response.ok) return;
+
+      const payload = (await response.json()) as {
+        results: Array<{ symbol: string; name: string; exchange: string }>;
+      };
+      setSearchResults(payload.results ?? []);
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [inputSymbol]);
 
   const handleLoadSymbol = () => {
-    const upper = inputSymbol.trim().toUpperCase();
+    const upper = normalizeTicker(inputSymbol);
     if (upper) {
       setSymbol(upper);
+      setInputSymbol(upper);
+      setIsSearchFocused(false);
     }
+  };
+
+  const selectSuggestion = (stockSymbol: string) => {
+    const normalized = normalizeTicker(stockSymbol);
+    setInputSymbol(normalized);
+    setSymbol(normalized);
+    setIsSearchFocused(false);
   };
 
   return (
@@ -36,14 +95,37 @@ export default function MarketPage() {
           </div>
 
           <div className="flex gap-3">
-            <input
-              type="text"
-              value={inputSymbol}
-              onChange={(e) => setInputSymbol(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleLoadSymbol()}
-              placeholder="AAPL, TSLA, GOOGL..."
-              className="bg-zinc-900 border border-zinc-700 px-6 py-3.5 rounded-2xl w-80 focus:outline-none focus:border-blue-500"
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={inputSymbol}
+                onFocus={() => setIsSearchFocused(true)}
+                onChange={(e) => setInputSymbol(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLoadSymbol()}
+                placeholder="Search symbol or company name"
+                className="bg-zinc-900 border border-zinc-700 px-6 py-3.5 rounded-2xl w-80 focus:outline-none focus:border-blue-500"
+              />
+
+              {isSearchFocused && searchResults.length > 0 && (
+                <div className="absolute left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden z-20 max-h-96 overflow-y-auto">
+                  {searchResults.map((stock) => (
+                    <button
+                      key={stock.symbol}
+                      type="button"
+                      onMouseDown={() => selectSuggestion(stock.symbol)}
+                      className="w-full px-4 py-3 text-left hover:bg-zinc-800 transition flex items-center gap-3"
+                    >
+                      <StockLogo name={stock.name} symbol={stock.symbol} />
+                      <div>
+                        <p className="font-semibold">{stock.symbol}</p>
+                        <p className="text-sm text-zinc-400">{stock.name}</p>
+                        <p className="text-xs text-zinc-500">{stock.exchange}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               onClick={handleLoadSymbol}
               className="bg-blue-600 hover:bg-blue-500 px-8 py-3.5 rounded-2xl font-medium"

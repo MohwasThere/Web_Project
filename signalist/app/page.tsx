@@ -1,5 +1,6 @@
 // app/page.tsx
 import Link from 'next/link';
+import testingLogo from '@/app/testing.png';
 
 export default function Home() {
   return (

@@ -6,7 +6,7 @@ type Plan = 'Free' | 'Basic' | 'Premium' | 'Pro';
 
 interface SubscriptionContextType {
   currentPlan: Plan;
-  upgradePlan: (newPlan: Plan) => void;
+  upgradePlan: (newPlan: Plan) => Promise<void>;
   resetUsage: () => void;
 }
 
@@ -16,14 +16,32 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [currentPlan, setCurrentPlan] = useState<Plan>('Free');
 
   useEffect(() => {
-    const savedPlan = localStorage.getItem('userPlan') as Plan;
-    if (savedPlan) setCurrentPlan(savedPlan);
+    const loadSubscription = async () => {
+      const response = await fetch('/api/subscription', { cache: 'no-store' });
+      if (!response.ok) return;
+
+      const payload = (await response.json()) as { plan?: Plan };
+      if (payload.plan) {
+        setCurrentPlan(payload.plan);
+      }
+    };
+
+    void loadSubscription();
   }, []);
 
-  const upgradePlan = (newPlan: Plan) => {
+  const upgradePlan = async (newPlan: Plan) => {
+    const response = await fetch('/api/subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: newPlan }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update subscription');
+    }
+
     setCurrentPlan(newPlan);
-    localStorage.setItem('userPlan', newPlan);
-    localStorage.setItem('predictionsUsed', '0'); // Reset usage on upgrade
+    localStorage.setItem('predictionsUsed', '0');
     alert(`🎉 Successfully upgraded to ${newPlan} Plan!`);
   };
 

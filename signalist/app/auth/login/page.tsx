@@ -3,21 +3,48 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function Login() {
+  const router = useRouter();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
-      toast.success("Welcome back to Signalist! 🎉");
-      window.location.href = '/dashboard';
-    }, 800);
+    try {
+      const response = await fetch('/api/auth/sign-in/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        const message = payload?.message ?? 'Invalid email or password';
+        throw new Error(message);
+      }
+
+      const payload = await response.json().catch(() => null);
+      if (!payload?.user) {
+        throw new Error('Login failed. Please verify email and password.');
+      }
+
+      toast.success('Welcome back to Signalist!');
+      router.push('/dashboard');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to sign in');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -76,7 +103,7 @@ export default function Login() {
           </form>
 
           <p className="text-center text-zinc-500 mt-8">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/signup" className="text-cyan-400 hover:underline">
               Sign up here
             </Link>

@@ -16,7 +16,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(user.name);
 
-  // Portfolio Stats (from localStorage)
+  // Portfolio Stats (from API)
   const [portfolioStats, setPortfolioStats] = useState({
     totalInvested: 0,
     currentValue: 0,
@@ -24,16 +24,42 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    const holdings = JSON.parse(localStorage.getItem('signalist_portfolio') || '[]');
-    
-    const invested = holdings.reduce((sum: number, h: any) => sum + h.shares * h.buyPrice, 0);
-    const current = holdings.reduce((sum: number, h: any) => sum + h.shares * h.currentPrice, 0);
-    
-    setPortfolioStats({
-      totalInvested: invested,
-      currentValue: current,
-      totalPL: current - invested,
-    });
+    const loadSessionProfile = async () => {
+      const response = await fetch('/api/auth/get-session', { cache: 'no-store' });
+      if (!response.ok) return;
+
+      const payload = await response.json();
+      const sessionUser = payload?.user;
+      if (!sessionUser) return;
+
+      setUser((prev) => ({
+        ...prev,
+        name: sessionUser.name ?? prev.name,
+        email: sessionUser.email ?? prev.email,
+      }));
+      setEditedName((prev) => sessionUser.name ?? prev);
+    };
+
+    const loadPortfolioStats = async () => {
+      const response = await fetch('/api/portfolio', { cache: 'no-store' });
+      if (!response.ok) return;
+
+      const payload = (await response.json()) as {
+        holdings: Array<{ shares: number; buyPrice: number; currentPrice: number }>;
+      };
+
+      const holdings = payload.holdings ?? [];
+      const invested = holdings.reduce((sum, h) => sum + h.shares * h.buyPrice, 0);
+      const current = holdings.reduce((sum, h) => sum + h.shares * h.currentPrice, 0);
+
+      setPortfolioStats({
+        totalInvested: invested,
+        currentValue: current,
+        totalPL: current - invested,
+      });
+    };
+
+    void Promise.all([loadSessionProfile(), loadPortfolioStats()]);
   }, []);
 
   const handleSave = () => {
