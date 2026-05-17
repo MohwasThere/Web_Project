@@ -3,6 +3,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import testingLogo from '@/app/logo.svg';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -52,15 +54,13 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-3xl flex items-center justify-center">
-              <span className="text-4xl font-bold">S</span>
-            </div>
+            <Image src={testingLogo} alt="Signalist Logo" width={100} height={100} className="rounded-lg object-contain" />
           </div>
           <h1 className="text-4xl font-bold">Welcome Back</h1>
           <p className="text-zinc-400 mt-2">Sign in to continue your journey</p>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-10">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-10">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm text-zinc-400 mb-2">Email Address</label>
@@ -71,7 +71,7 @@ export default function Login() {
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500"
                   placeholder="you@email.com"
                 />
               </div>
@@ -86,7 +86,7 @@ export default function Login() {
                   required
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500"
                   placeholder="••••••••"
                 />
               </div>
@@ -95,7 +95,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-white text-black py-4 rounded-2xl font-semibold text-lg hover:bg-gray-200 transition flex items-center justify-center gap-2"
+              className="w-full bg-white text-black py-4 rounded-lg font-semibold text-lg hover:bg-gray-200 transition flex items-center justify-center gap-2"
             >
               {loading ? "Signing in..." : "Sign In"}
               <ArrowRight />

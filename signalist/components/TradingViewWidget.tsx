@@ -24,7 +24,7 @@ const TradingViewWidget = ({
   const containerRef = useTradingView(scriptUrl, config, height);
 
   return (
-    <div className="w-full bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden">
+    <div className="w-full bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
       {title && (
         <div className="px-6 py-4 border-b border-zinc-800">
           <h3 className="font-semibold text-lg text-white">{title}</h3>

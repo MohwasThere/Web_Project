@@ -210,15 +210,15 @@ export default function PortfolioPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
             <p className="text-zinc-400">Total Invested</p>
             <p className="text-3xl font-bold mt-2">${totalInvested.toFixed(2)}</p>
           </div>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
             <p className="text-zinc-400">Current Portfolio Value</p>
             <p className="text-3xl font-bold mt-2">${totalCurrent.toFixed(2)}</p>
           </div>
-          <div className={`bg-zinc-900 border border-zinc-800 rounded-3xl p-6 font-medium ${totalPL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <div className={`bg-zinc-900 border border-zinc-800 rounded-xl p-6 font-medium ${totalPL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
             <p className="text-zinc-400">Total Profit / Loss</p>
             <p className="text-3xl mt-2">
               ${totalPL.toFixed(2)} ({totalPLPercent.toFixed(2)}%)
@@ -227,7 +227,7 @@ export default function PortfolioPage() {
         </div>
 
         {/* Buy Section */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 mb-10">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 mb-10">
           <h2 className="text-2xl font-semibold mb-6">Buy Stocks (Simulation)</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -240,11 +240,11 @@ export default function PortfolioPage() {
                   onFocus={() => setIsSearchFocused(true)}
                   onChange={(e) => setSymbol(e.target.value)}
                   placeholder="Search symbol or company name"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-3"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-5 py-3"
                 />
 
                 {isSearchFocused && filteredSuggestions.length > 0 && (
-                  <div className="absolute left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden z-20">
+                  <div className="absolute left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-lg overflow-hidden z-20">
                     {filteredSuggestions.map((stock) => (
                       <button
                         key={stock.symbol}
@@ -271,7 +271,7 @@ export default function PortfolioPage() {
                 value={shares}
                 onChange={(e) => setShares(Number(e.target.value))}
                 min="1"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-3"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-5 py-3"
               />
             </div>
             <div>
@@ -280,13 +280,13 @@ export default function PortfolioPage() {
                 type="number"
                 value={buyPrice}
                 onChange={(e) => setBuyPrice(Number(e.target.value))}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-3"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-5 py-3"
               />
             </div>
             <div className="flex items-end">
               <button
                 onClick={addHolding}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-2xl font-semibold"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-lg font-semibold"
               >
                 Buy Stock
               </button>
@@ -295,7 +295,7 @@ export default function PortfolioPage() {
         </div>
 
         {/* Holdings Table with Live Prices */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
           <h2 className="text-2xl font-semibold mb-6">Your Holdings (Live)</h2>
 
           {holdings.length === 0 ? (

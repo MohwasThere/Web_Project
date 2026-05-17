@@ -4,6 +4,35 @@ import { useState, useEffect } from 'react';
 import { Star, TrendingUp, TrendingDown, Clock, Zap } from 'lucide-react';
 import { subscriptionFeatures, SubscriptionPlan } from '@/lib/subscription';
 import { useSubscription } from '@/app/context/SubscriptionContext';
+import { getLogoCandidates, normalizeTicker } from '@/lib/market/logos';
+import { toast } from 'react-hot-toast';
+
+function StockLogo({ name, symbol }: { name: string; symbol: string }) {
+  const [logoIndex, setLogoIndex] = useState(0);
+  const logoCandidates = getLogoCandidates(symbol);
+  const currentLogo = logoCandidates[logoIndex];
+
+  useEffect(() => {
+    setLogoIndex(0);
+  }, [symbol]);
+
+  if (!currentLogo) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-200">
+        {symbol.slice(0, 2)}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={currentLogo}
+      alt={`${name} logo`}
+      onError={() => setLogoIndex((prev) => prev + 1)}
+      className="w-8 h-8 rounded-full bg-zinc-900 ring-1 ring-zinc-700 p-1 object-contain"
+    />
+  );
+}
 
 const mockPredictions = [
   { symbol: "NVDA", direction: "bullish", confidence: 89, target: "148.50", reason: "Strong AI demand and excellent earnings momentum" },
@@ -18,10 +47,16 @@ export default function AIPredictionsPage() {
   const [predictions, setPredictions] = useState<any[]>([]);
   const [usedToday, setUsedToday] = useState(0);
 
-  // Load used predictions
+  // Load used predictions and generated predictions for the session
   useEffect(() => {
-    const savedUsed = parseInt(localStorage.getItem('predictionsUsed') || '0');
+    const savedUsed = parseInt(sessionStorage.getItem('predictionsUsed') || '0');
     setUsedToday(savedUsed);
+    const savedPreds = sessionStorage.getItem('predictionsList');
+    if (savedPreds) {
+      try {
+        setPredictions(JSON.parse(savedPreds));
+      } catch (e) {}
+    }
   }, []);
 
   const features = subscriptionFeatures[currentPlan];
@@ -32,10 +67,52 @@ export default function AIPredictionsPage() {
 
     const newPreds = mockPredictions.slice(0, Math.min(remaining, 5));
     setPredictions(newPreds);
+    sessionStorage.setItem('predictionsList', JSON.stringify(newPreds));
     
     const newUsed = Math.min(features.maxPredictions, usedToday + newPreds.length);
     setUsedToday(newUsed);
-    localStorage.setItem('predictionsUsed', newUsed.toString());
+    sessionStorage.setItem('predictionsUsed', newUsed.toString());
+  };
+
+  const addToWatchlist = async (symbol: string) => {
+    try {
+      const response = await fetch('/api/watchlist', { cache: 'no-store' });
+      if (!response.ok) throw new Error('Failed to fetch watchlist');
+      const payload = await response.json();
+      const items = payload.items || [];
+      
+      if (items.some((item: any) => item.symbol === symbol)) {
+        toast.error(`${symbol} is already in your watchlist!`);
+        return;
+      }
+      
+      const newItem = {
+        symbol,
+        name: `${symbol} Inc.`,
+        entryPrice: 0,
+        addedAt: new Date().toISOString(),
+      };
+      
+      const updateResponse = await fetch('/api/watchlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: [...items, newItem] }),
+      });
+      
+      if (!updateResponse.ok) throw new Error('Failed to update watchlist');
+      
+      toast.success(`Added ${symbol} to Watchlist`);
+
+      // Remove from predictions list and update session storage
+      setPredictions((prev) => {
+        const next = prev.filter(p => p.symbol !== symbol);
+        sessionStorage.setItem('predictionsList', JSON.stringify(next));
+        return next;
+      });
+
+    } catch (error) {
+      toast.error('Could not add to watchlist');
+    }
   };
 
   return (
@@ -54,14 +131,14 @@ export default function AIPredictionsPage() {
 
         {/* Subscription Status Banner */}
         {currentPlan === 'Free' && (
-          <div className="bg-gradient-to-r from-amber-900/50 to-zinc-900 border border-amber-500/30 rounded-3xl p-6 mb-8 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-amber-900/50 to-zinc-900 border border-amber-500/30 rounded-xl p-6 mb-8 flex items-center justify-between">
             <div>
               <h3 className="text-xl font-semibold">Free Plan Limited</h3>
               <p className="text-zinc-400">Upgrade to unlock unlimited powerful AI predictions</p>
             </div>
             <button 
               onClick={() => window.location.href = '/dashboard/subscription'}
-              className="bg-amber-500 hover:bg-amber-600 text-black px-8 py-3 rounded-2xl font-semibold"
+              className="bg-amber-500 hover:bg-amber-600 text-black px-6 py-2.5 rounded-lg font-semibold"
             >
               Upgrade Now
             </button>
@@ -72,7 +149,7 @@ export default function AIPredictionsPage() {
           <button
             onClick={generatePredictions}
             disabled={usedToday >= features.maxPredictions}
-            className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 px-10 py-4 rounded-2xl font-semibold flex items-center gap-3 disabled:opacity-50"
+            className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 px-7 py-3 rounded-lg font-semibold flex items-center gap-3 disabled:opacity-50"
           >
             <Zap size={22} />
             Generate New AI Predictions
@@ -82,10 +159,13 @@ export default function AIPredictionsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {predictions.length > 0 ? (
             predictions.map((pred, i) => (
-              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:border-cyan-500/50 transition">
+              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-cyan-500/50 transition flex flex-col">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-2xl font-bold">{pred.symbol}</h3>
+                    <div className="flex items-center gap-2">
+                      <StockLogo name={pred.symbol} symbol={pred.symbol} />
+                      <h3 className="text-2xl font-bold">{pred.symbol}</h3>
+                    </div>
                     <p className="text-sm text-zinc-500">Next Target: ${pred.target}</p>
                   </div>
                   <div className={`px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${pred.direction === 'bullish' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
@@ -105,20 +185,20 @@ export default function AIPredictionsPage() {
                   <p className="text-right text-sm mt-1 font-medium">{pred.confidence}%</p>
                 </div>
 
-                <p className="text-zinc-300 text-sm leading-relaxed mb-6">
+                <p className="text-zinc-300 text-sm leading-relaxed mb-6 flex-1">
                   {pred.reason}
                 </p>
 
                 <div className="flex gap-3">
                   <button 
-                    onClick={() => alert(`Added ${pred.symbol} to Watchlist`)}
-                    className="flex-1 border border-zinc-700 hover:bg-zinc-800 py-3 rounded-2xl text-sm"
+                    onClick={() => void addToWatchlist(pred.symbol)}
+                    className="flex-1 border border-zinc-700 hover:bg-zinc-800 py-3 rounded-lg text-sm"
                   >
                     Add to Watchlist
                   </button>
                   <button 
                     onClick={() => window.location.href = '/dashboard/portfolio'}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl text-sm font-semibold"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 py-3 rounded-lg text-sm font-semibold"
                   >
                     Simulate Buy
                   </button>

@@ -1,6 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import testingLogo from '@/app/logo.svg';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
@@ -10,7 +13,9 @@ import {
   User, 
   CreditCard, 
   Newspaper,
-  LogOut 
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 
 const navItems = [
@@ -26,16 +31,46 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/150?img=68');
+  const [userName, setUserName] = useState('Profile');
+
+  useEffect(() => {
+    const loadAvatar = async () => {
+      try {
+        const res = await fetch('/api/auth/get-session', { cache: 'no-store' });
+        if (!res.ok) return;
+        const payload = await res.json();
+        if (payload?.user?.image) {
+          setAvatarUrl(payload.user.image);
+        }
+        if (payload?.user?.name) {
+          setUserName(payload.user.name);
+        }
+      } catch {}
+    };
+    void loadAvatar();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white flex">
       {/* Sidebar */}
-      <div className="w-72 bg-zinc-950 border-r border-zinc-800 p-6 flex flex-col fixed h-screen">
-        <div className="flex items-center gap-3 mb-12">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
-            <span className="text-white font-bold text-2xl">S</span>
+      <div
+        className="bg-zinc-950 border-r border-zinc-800 p-6 flex flex-col fixed h-screen transition-all duration-300 ease-in-out z-30"
+        style={{ width: collapsed ? '5rem' : '18rem' }}
+      >
+        {/* Logo + Toggle */}
+        <div className="flex items-center justify-between mb-12">
+          <div className={`overflow-hidden transition-all duration-300 ${collapsed ? 'w-10' : 'w-[100px]'}`}>
+            <Image src={testingLogo} alt="Signalist Logo" width={100} height={100} className="rounded-lg object-contain" />
           </div>
-          <h1 className="text-3xl font-bold">Signalist</h1>
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors flex-shrink-0"
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+          </button>
         </div>
 
         <nav className="flex-1 space-y-1">
@@ -45,14 +80,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all ${
+                title={collapsed ? item.name : undefined}
+                className={`flex items-center gap-3 transition-all ${
+                  collapsed
+                    ? item.name === 'Profile'
+                      ? 'p-0.5 justify-center rounded-full w-[34px] h-[34px]'
+                      : 'px-2.5 py-2.5 justify-center rounded-xl'
+                    : 'px-4 py-2.5 rounded-lg'
+                } ${
                   isActive 
                     ? 'bg-blue-600 text-white' 
                     : 'hover:bg-zinc-900 text-zinc-400 hover:text-white'
                 }`}
               >
-                <item.icon size={22} />
-                <span className="font-medium">{item.name}</span>
+                {item.name === 'Profile' ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    className="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full object-cover flex-shrink-0 ring-1 ring-zinc-600"
+                  />
+                ) : (
+                  <item.icon size={22} className="flex-shrink-0" />
+                )}
+                {!collapsed && <span className="font-medium whitespace-nowrap overflow-hidden">{item.name === 'Profile' ? userName : item.name}</span>}
               </Link>
             );
           })}
@@ -61,18 +111,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="pt-6 border-t border-zinc-800 mt-auto">
           <button 
             onClick={() => window.location.href = '/'}
-            className="flex items-center gap-3 px-5 py-3 text-red-400 hover:text-red-500 w-full rounded-2xl hover:bg-zinc-900"
+            title={collapsed ? 'Logout' : undefined}
+            className={`flex items-center gap-3 text-red-400 hover:text-red-500 w-full rounded-lg hover:bg-zinc-900 ${
+              collapsed ? 'px-3 py-3 justify-center' : 'px-5 py-3'
+            }`}
           >
-            <LogOut size={22} />
-            <span>Logout</span>
+            <LogOut size={22} className="flex-shrink-0" />
+            {!collapsed && <span>Logout</span>}
           </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-72">
+      <div
+        className="flex-1 transition-all duration-300 ease-in-out"
+        style={{ marginLeft: collapsed ? '5rem' : '18rem' }}
+      >
         {children}
       </div>
     </div>
   );
 }
+

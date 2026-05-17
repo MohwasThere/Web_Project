@@ -77,15 +77,6 @@ export default function MarketPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white">
-      <nav className="flex items-center justify-between px-8 py-5 border-b border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xl">S</span>
-          </div>
-          <h1 className="text-2xl font-semibold">Signalist</h1>
-        </div>
-
-      </nav>
 
       <div className="p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
@@ -103,11 +94,11 @@ export default function MarketPage() {
                 onChange={(e) => setInputSymbol(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleLoadSymbol()}
                 placeholder="Search symbol or company name"
-                className="bg-zinc-900 border border-zinc-700 px-6 py-3.5 rounded-2xl w-80 focus:outline-none focus:border-blue-500"
+                className="bg-zinc-900 border border-zinc-700 px-5 py-2.5 rounded-lg w-80 focus:outline-none focus:border-blue-500"
               />
 
               {isSearchFocused && searchResults.length > 0 && (
-                <div className="absolute left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden z-20 max-h-96 overflow-y-auto">
+                <div className="absolute left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-lg overflow-hidden z-20 max-h-96 overflow-y-auto">
                   {searchResults.map((stock) => (
                     <button
                       key={stock.symbol}
@@ -128,7 +119,7 @@ export default function MarketPage() {
             </div>
             <button
               onClick={handleLoadSymbol}
-              className="bg-blue-600 hover:bg-blue-500 px-8 py-3.5 rounded-2xl font-medium"
+              className="bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-lg font-medium"
             >
               Load Chart
             </button>
@@ -136,12 +127,15 @@ export default function MarketPage() {
         </div>
 
         <div className="mb-6">
-          <h3 className="text-3xl font-bold text-blue-400">{symbol}</h3>
-          <p className="text-zinc-500">Advanced Chart • Real Time</p>
+          <div className="flex items-center gap-3">
+            <StockLogo name={symbol} symbol={symbol} />
+            <h3 className="text-3xl font-bold text-blue-400">{symbol}</h3>
+          </div>
+          <p className="text-zinc-500 mt-1">Advanced Chart • Real Time</p>
         </div>
 
         {/* Main Chart */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
           <TradingViewWidget
             title=""
             scriptUrl="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js"
@@ -158,12 +152,13 @@ export default function MarketPage() {
               <button
                 key={s}
                 onClick={() => setSymbol(s)}
-                className={`px-6 py-3 rounded-2xl transition-all ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg transition-all ${
                   symbol === s 
                     ? 'bg-blue-600 text-white scale-105' 
                     : 'bg-zinc-800 hover:bg-zinc-700'
                 }`}
               >
+                <StockLogo name={s} symbol={s} />
                 {s}
               </button>
             ))}

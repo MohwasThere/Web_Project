@@ -33,7 +33,7 @@ export default function SubscriptionPage() {
             return (
               <div
                 key={plan.name}
-                className={`relative bg-zinc-900 border rounded-3xl p-8 ${plan.popular ? 'border-emerald-500 scale-105' : 'border-zinc-800'}`}
+                className={`relative bg-zinc-900 border rounded-xl p-8 flex flex-col ${plan.popular ? 'border-emerald-500 scale-105' : 'border-zinc-800'}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-black px-6 py-1 rounded-full text-sm font-bold flex items-center gap-1">
@@ -46,7 +46,7 @@ export default function SubscriptionPage() {
                   ${plan.price}<span className="text-lg font-normal text-zinc-400">/{plan.period}</span>
                 </p>
 
-                <ul className="space-y-3 mb-10 text-zinc-300">
+                <ul className="space-y-3 mb-10 text-zinc-300 flex-1">
                   {plan.name === "Free" && (
                     <>
                       <li>✓ Basic Features</li>
@@ -81,7 +81,7 @@ export default function SubscriptionPage() {
                 <button
                   onClick={() => void handleUpgrade(plan.name as Plan)}
                   disabled={isCurrent}
-                  className={`w-full py-4 rounded-2xl font-semibold text-lg ${
+                  className={`w-full py-2.5 rounded-lg font-semibold text-sm ${
                     isCurrent 
                       ? 'bg-zinc-700 cursor-default' 
                       : plan.popular 

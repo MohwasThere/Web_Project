@@ -74,13 +74,13 @@ export default function ProfilePage() {
         <h1 className="text-4xl font-bold mb-10">My Profile</h1>
 
         {/* Profile Header */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 mb-8">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
             <div className="relative">
               <img
                 src={user.avatar}
                 alt="Profile"
-                className="w-32 h-32 rounded-2xl object-cover border-4 border-zinc-700"
+                className="w-32 h-32 rounded-lg object-cover border-4 border-zinc-700"
               />
               <button className="absolute bottom-2 right-2 bg-zinc-800 p-2 rounded-full hover:bg-zinc-700">
                 <Edit3 size={18} />
@@ -94,7 +94,7 @@ export default function ProfilePage() {
                     type="text"
                     value={editedName}
                     onChange={(e) => setEditedName(e.target.value)}
-                    className="bg-zinc-800 border border-zinc-600 text-3xl font-bold px-4 py-2 rounded-2xl focus:outline-none"
+                    className="bg-zinc-800 border border-zinc-600 text-3xl font-bold px-4 py-2 rounded-lg focus:outline-none"
                   />
                 ) : (
                   <h2 className="text-4xl font-bold">{user.name}</h2>
@@ -116,7 +116,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="text-center">
-              <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-6 py-3 rounded-2xl">
+              <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-5 py-2.5 rounded-lg">
                 <Award size={24} />
                 <span className="font-semibold">{currentPlan} Member</span>
               </div>
@@ -127,7 +127,7 @@ export default function ProfilePage() {
             <div className="flex justify-center mt-6">
               <button
                 onClick={handleSave}
-                className="bg-emerald-600 hover:bg-emerald-500 px-8 py-3 rounded-2xl"
+                className="bg-emerald-600 hover:bg-emerald-500 px-6 py-2.5 rounded-lg"
               >
                 Save Changes
               </button>
@@ -137,17 +137,17 @@ export default function ProfilePage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
             <p className="text-zinc-400">Total Invested</p>
             <p className="text-4xl font-bold mt-3">${portfolioStats.totalInvested.toFixed(2)}</p>
           </div>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
             <p className="text-zinc-400">Current Portfolio Value</p>
             <p className="text-4xl font-bold mt-3">${portfolioStats.currentValue.toFixed(2)}</p>
           </div>
 
-          <div className={`bg-zinc-900 border border-zinc-800 rounded-3xl p-8 ${portfolioStats.totalPL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <div className={`bg-zinc-900 border border-zinc-800 rounded-xl p-8 ${portfolioStats.totalPL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
             <p className="text-zinc-400">Total P/L</p>
             <p className="text-4xl font-bold mt-3">
               ${portfolioStats.totalPL.toFixed(2)}
@@ -156,7 +156,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Account Settings */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
           <h3 className="text-2xl font-semibold mb-6">Account Settings</h3>
           
           <div className="space-y-6">

@@ -11,7 +11,7 @@ export default function NewsPage() {
         <p className="text-zinc-400">Latest financial news and market updates</p>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
         <TradingViewWidget
           title="Latest Market News & Top Stories"
           scriptUrl="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js"

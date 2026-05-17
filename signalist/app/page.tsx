@@ -1,6 +1,7 @@
 // app/page.tsx
 import Link from 'next/link';
-import testingLogo from '@/app/testing.png';
+import Image from 'next/image';
+import testingLogo from '@/app/logo.svg';
 
 export default function Home() {
   return (
@@ -8,10 +9,7 @@ export default function Home() {
       {/* Navbar */}
       <nav className="flex items-center justify-between px-8 py-6 border-b border-zinc-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center">
-            <span className="font-bold text-3xl">S</span>
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">Signalist</h1>
+          <Image src={testingLogo} alt="Signalist Logo" width={100} height={100} className="rounded-lg object-contain" />
         </div>
 
         <div className="flex items-center gap-8">
@@ -19,7 +17,7 @@ export default function Home() {
           <Link href="/auth/login" className="hover:text-cyan-400 transition">Login</Link>
           <Link 
             href="/auth/signup" 
-            className="bg-white text-black px-8 py-3 rounded-2xl font-semibold hover:bg-gray-200 transition"
+            className="bg-white text-black px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-200 transition"
           >
             Get Started Free
           </Link>
@@ -43,13 +41,13 @@ export default function Home() {
           <div className="flex items-center justify-center gap-4">
             <Link 
               href="/auth/signup"
-              className="bg-white text-black px-10 py-4 rounded-2xl text-lg font-semibold hover:bg-gray-100 transition"
+              className="bg-white text-black px-7 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition"
             >
               Start Investing Now
             </Link>
             <Link 
               href="/dashboard"
-              className="border border-zinc-700 hover:border-white px-10 py-4 rounded-2xl text-lg font-medium transition"
+              className="border border-zinc-700 hover:border-white px-7 py-3 rounded-lg text-lg font-medium transition"
             >
               View Demo
             </Link>

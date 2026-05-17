@@ -253,7 +253,7 @@ export default function WatchlistPage() {
         </p>
 
         {/* Add Stock */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-8 flex gap-4">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-8 flex gap-4">
           <div className="flex-1 relative">
             <input
               type="text"
@@ -261,12 +261,12 @@ export default function WatchlistPage() {
               onChange={(e) => setNewSymbol(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               placeholder="Search by symbol or company name (e.g. NVDA, NVIDIA)"
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-6 py-4 focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-5 py-3 focus:outline-none focus:border-blue-500"
               onKeyDown={(e) => e.key === 'Enter' && void addToWatchlist()}
             />
 
             {isSearchFocused && filteredSuggestions.length > 0 && (
-              <div className="absolute left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden z-20">
+              <div className="absolute left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-lg overflow-hidden z-20">
                 {filteredSuggestions.map((stock) => (
                   <button
                     key={stock.symbol}
@@ -286,7 +286,7 @@ export default function WatchlistPage() {
           </div>
           <button
             onClick={() => void addToWatchlist()}
-            className="bg-blue-600 hover:bg-blue-500 px-10 rounded-2xl font-semibold"
+            className="bg-blue-600 hover:bg-blue-500 px-10 rounded-lg font-semibold"
           >
             Add to Watchlist
           </button>
@@ -294,7 +294,7 @@ export default function WatchlistPage() {
 
         {/* Watchlist Items */}
         {watchlist.length === 0 ? (
-          <div className="text-center py-20 bg-zinc-900 border border-zinc-800 rounded-3xl">
+          <div className="text-center py-20 bg-zinc-900 border border-zinc-800 rounded-xl">
             <p className="text-2xl text-zinc-500">Your watchlist is empty</p>
             <p className="text-zinc-600 mt-2">Add stocks you want to monitor</p>
           </div>
@@ -303,7 +303,7 @@ export default function WatchlistPage() {
             {watchlist.map((stock, index) => (
               <div
                 key={index}
-                className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:border-zinc-600 transition-all group"
+                className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-zinc-600 transition-all group"
               >
                 <div className="flex justify-between items-start">
                   <div>
@@ -337,7 +337,7 @@ export default function WatchlistPage() {
 
                 <button
                   onClick={() => window.location.href = '/dashboard/portfolio'}
-                  className="mt-6 w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-2xl text-sm font-semibold"
+                  className="mt-6 w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-lg text-sm font-semibold"
                 >
                   Simulate Buy
                 </button>
