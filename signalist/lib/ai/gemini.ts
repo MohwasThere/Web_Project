@@ -24,7 +24,11 @@ export const generatePrediction = async (symbol: string) => {
 
   const result = await model.generateContent(prompt);
   const rawText = result.response.text().trim();
-  const parsed = predictionSchema.parse(JSON.parse(rawText));
+  const jsonText = rawText
+    .replace(/^```(?:json)?\s*\n?/i, "")
+    .replace(/\n?```\s*$/i, "")
+    .trim();
+  const parsed = predictionSchema.parse(JSON.parse(jsonText));
 
   return {
     ...parsed,

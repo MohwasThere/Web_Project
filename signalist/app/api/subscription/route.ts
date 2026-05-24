@@ -20,7 +20,7 @@ export async function GET() {
   const subscription = await SubscriptionModel.findOneAndUpdate(
     { userId: session.user.id },
     { $setOnInsert: { plan: "Free", status: "active" } },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: 'after' }
   ).lean();
 
   return NextResponse.json({
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const subscription = await SubscriptionModel.findOneAndUpdate(
       { userId: session.user.id },
       { $set: { plan: body.plan, status: "active" } },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     ).lean();
 
     return NextResponse.json({

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import { z, ZodError } from "zod";
 
 import { getServerSession } from "@/lib/auth-session";
 import { connectMongoose } from "@/lib/db/mongoose";
@@ -40,8 +40,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ items });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Invalid request" },
-      { status: 400 }
+      { error: error instanceof Error ? error.message : "Failed to load watchlist" },
+      { status: 500 }
     );
   }
 }
@@ -68,14 +68,15 @@ export async function POST(request: Request) {
           })),
         },
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     ).lean();
 
     return NextResponse.json({ items: updated?.items ?? [] });
   } catch (error) {
+    const status = error instanceof ZodError ? 400 : 500;
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Invalid request" },
-      { status: 400 }
+      { status }
     );
   }
 }

@@ -13,7 +13,7 @@ const holdingSchema = new Schema(
 
 const portfolioSchema = new Schema(
   {
-    userId: { type: String, required: true, index: true },
+    userId: { type: String, required: true },
     holdings: { type: [holdingSchema], default: [] },
   },
   { timestamps: true }

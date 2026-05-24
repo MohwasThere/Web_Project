@@ -41,12 +41,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
 
     setCurrentPlan(newPlan);
-    localStorage.setItem('predictionsUsed', '0');
     alert(`🎉 Successfully upgraded to ${newPlan} Plan!`);
   };
 
   const resetUsage = () => {
-    localStorage.setItem('predictionsUsed', '0');
+    // Quota is tracked server-side; nothing to reset locally.
   };
 
   return (
