@@ -29,12 +29,13 @@ export default function ProfilePage() {
 
   // Password change modal
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({
-    current: '',
-    next: '',
-    confirm: '',
-  });
+  const [passwordForm, setPasswordForm] = useState({ current: '', next: '', confirm: '' });
   const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Delete account modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     const loadSessionProfile = async () => {
@@ -92,6 +93,31 @@ export default function ProfilePage() {
 
     void Promise.all([loadSessionProfile(), loadPortfolioStats()]);
   }, []);
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) { toast.error('Please enter your password'); return; }
+    setDeleteLoading(true);
+    try {
+      // Delete account — verifies password, wipes all user data, removes from DB
+      const res = await fetch('/api/user', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: deletePassword }),
+      });
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        throw new Error(payload?.error ?? 'Incorrect password');
+      }
+
+      toast.success('Account deleted');
+      window.location.href = '/';
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete account');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const handleSave = () => {
     setUser({ ...user, name: editedName });
@@ -257,13 +283,50 @@ export default function ProfilePage() {
             </div>
 
             <div className="pt-6">
-              <button className="text-red-500 hover:text-red-400 font-medium">
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="text-red-500 hover:text-red-400 font-medium"
+              >
                 Delete Account
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-red-900 rounded-xl p-8 w-full max-w-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-red-400">Delete Account</h2>
+              <button onClick={() => { setShowDeleteModal(false); setDeletePassword(''); }} className="text-zinc-400 hover:text-white">
+                <X size={22} />
+              </button>
+            </div>
+            <p className="text-zinc-400 text-sm mb-6">
+              This will permanently delete your account, portfolio, and watchlist. This action <span className="text-white font-semibold">cannot be undone</span>.
+            </p>
+            <div>
+              <label className="block text-sm text-zinc-400 mb-1">Enter your password to confirm</label>
+              <input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="Your password"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500"
+              />
+            </div>
+            <button
+              onClick={() => void handleDeleteAccount()}
+              disabled={deleteLoading || !deletePassword}
+              className="mt-5 w-full bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed py-3 rounded-lg font-semibold"
+            >
+              {deleteLoading ? 'Deleting…' : 'Yes, Delete My Account'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Password Change Modal */}
       {showPasswordModal && (
