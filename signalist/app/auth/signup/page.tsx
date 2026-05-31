@@ -18,20 +18,44 @@ export default function Signup() {
     confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
+  const [fieldError, setFieldError] = useState<string | null>(null);
+
+  const validatePassword = (password: string, confirmPassword: string) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      return "Password must include at least one uppercase letter.";
+    }
+
+    if (!/[a-z]/.test(password)) {
+      return "Password must include at least one lowercase letter.";
+    }
+
+    if (!/[0-9]/.test(password)) {
+      return "Password must include at least one number.";
+    }
+
+    if (password !== confirmPassword) {
+      return "Passwords do not match.";
+    }
+
+    return null;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFieldError(null);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords don't match!");
-      return;
-    }
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters!");
+
+    const passwordError = validatePassword(formData.password, formData.confirmPassword);
+    if (passwordError) {
+      setFieldError(passwordError);
+      toast.error(passwordError);
       return;
     }
 
@@ -155,6 +179,10 @@ export default function Signup() {
                 />
               </div>
             </div>
+
+            {fieldError && (
+              <p className="text-sm text-red-400 -mt-2">{fieldError}</p>
+            )}
 
             <button
               type="submit"

@@ -13,10 +13,27 @@ export default function Login() {
   const router = useRouter();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const getLoginErrorMessage = (rawMessage?: string) => {
+    const message = (rawMessage ?? '').toLowerCase();
+
+    if (
+      message.includes('invalid') ||
+      message.includes('credentials') ||
+      message.includes('password') ||
+      message.includes('user not found')
+    ) {
+      return 'Incorrect email or password.';
+    }
+
+    return rawMessage ?? 'Unable to sign in. Please try again.';
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setFormError(null);
 
     try {
       const response = await fetch('/api/auth/sign-in/email', {
@@ -31,19 +48,21 @@ export default function Login() {
 
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
-        const message = payload?.message ?? 'Invalid email or password';
+        const message = getLoginErrorMessage(payload?.message);
         throw new Error(message);
       }
 
       const payload = await response.json().catch(() => null);
       if (!payload?.user) {
-        throw new Error('Login failed. Please verify email and password.');
+        throw new Error('Incorrect email or password.');
       }
 
       toast.success('Welcome back to Signalist!');
       router.push('/dashboard');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to sign in');
+      const message = error instanceof Error ? error.message : 'Unable to sign in';
+      setFormError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -70,7 +89,10 @@ export default function Login() {
                   type="email"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => {
+                    setFormError(null);
+                    setFormData({ ...formData, email: e.target.value });
+                  }}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500"
                   placeholder="you@email.com"
                 />
@@ -85,7 +107,10 @@ export default function Login() {
                   type="password"
                   required
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) => {
+                    setFormError(null);
+                    setFormData({ ...formData, password: e.target.value });
+                  }}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500"
                   placeholder="••••••••"
                 />
@@ -100,6 +125,10 @@ export default function Login() {
               {loading ? "Signing in..." : "Sign In"}
               <ArrowRight />
             </button>
+
+            {formError && (
+              <p className="text-sm text-red-400 text-center">{formError}</p>
+            )}
           </form>
 
           <p className="text-center text-zinc-500 mt-8">
