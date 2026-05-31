@@ -84,6 +84,13 @@ export default function Signup() {
         throw new Error('Sign up failed. Please try again.');
       }
 
+      // Always initialize new accounts on the Free plan
+      await fetch('/api/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: 'Free' }),
+      }).catch(() => null);
+
       await fetch('/api/email/welcome', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
