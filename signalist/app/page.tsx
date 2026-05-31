@@ -38,18 +38,12 @@ export default function Home() {
             all in one beautiful platform.
           </p>
 
-          <div className="flex items-center justify-center gap-4">
-            <Link 
+          <div className="flex items-center justify-center">
+            <Link
               href="/auth/signup"
               className="bg-white text-black px-7 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition"
             >
               Start Investing Now
-            </Link>
-            <Link 
-              href="/dashboard"
-              className="border border-zinc-700 hover:border-white px-7 py-3 rounded-lg text-lg font-medium transition"
-            >
-              View Demo
             </Link>
           </div>
         </div>

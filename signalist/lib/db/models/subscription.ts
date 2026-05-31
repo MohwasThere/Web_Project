@@ -2,7 +2,7 @@ import { InferSchemaType, Model, Schema, model, models } from "mongoose";
 
 const subscriptionSchema = new Schema(
   {
-    userId: { type: String, required: true, index: true },
+    userId: { type: String, required: true },
     plan: {
       type: String,
       enum: ["Free", "Basic", "Premium", "Pro"],

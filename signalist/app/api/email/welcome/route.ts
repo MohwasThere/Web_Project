@@ -4,6 +4,7 @@ import { z } from "zod";
 import { buildWelcomeEmail } from "@/lib/email/templates";
 import { mailTransporter } from "@/lib/email/transporter";
 import { env } from "@/lib/env";
+import { getServerSession } from "@/lib/auth-session";
 
 const bodySchema = z.object({
   name: z.string().min(1),
@@ -12,6 +13,11 @@ const bodySchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = bodySchema.parse(await request.json());
     const payload = buildWelcomeEmail(body.name);
 

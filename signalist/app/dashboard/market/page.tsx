@@ -91,6 +91,7 @@ export default function MarketPage() {
                 type="text"
                 value={inputSymbol}
                 onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
                 onChange={(e) => setInputSymbol(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleLoadSymbol()}
                 placeholder="Search symbol or company name"

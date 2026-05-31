@@ -159,21 +159,24 @@ export default function WatchlistPage() {
           };
         })
       );
+    } catch {
+      // Network error or server restarting — keep current prices
     } finally {
       setQuotesLoading(false);
     }
   };
 
-  // Refresh with real market quotes every 30s
+  // Refresh with real market quotes every 10s
   useEffect(() => {
     if (!isLoaded || watchlist.length === 0) return;
 
     void refreshQuotes(watchlist);
     const interval = setInterval(() => {
       void refreshQuotes(watchlist);
-    }, 30000);
+    }, 10_000);
 
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, watchlist.length]);
 
   const addToWatchlist = async () => {
@@ -244,7 +247,7 @@ export default function WatchlistPage() {
     <div className="min-h-screen bg-[#0A0A0A] text-white p-8">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-4xl font-bold mb-2">My Watchlist</h1>
-        <p className="text-emerald-400 mb-8">● Live Market Prices {quotesLoading ? '(Refreshing...)' : '(Updates every 30 seconds)'}</p>
+        <p className="text-emerald-400 mb-8">● Live Market Prices {quotesLoading ? '(Refreshing...)' : '(Updates every 10 seconds)'}</p>
         <p className={`mb-4 text-sm ${saveStatus === 'error' ? 'text-red-400' : 'text-zinc-500'}`}>
           {saveStatus === 'saving' && 'Saving watchlist...'}
           {saveStatus === 'saved' && 'Watchlist saved'}
@@ -260,6 +263,7 @@ export default function WatchlistPage() {
               value={newSymbol}
               onChange={(e) => setNewSymbol(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
               placeholder="Search by symbol or company name (e.g. NVDA, NVIDIA)"
               className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-5 py-3 focus:outline-none focus:border-blue-500"
               onKeyDown={(e) => e.key === 'Enter' && void addToWatchlist()}
@@ -323,20 +327,30 @@ export default function WatchlistPage() {
 
                 <div className="mt-8">
                   <p className="text-4xl font-mono font-bold">
-                    ${stock.currentPrice.toFixed(2)}
+                    {stock.currentPrice > 0 ? `$${stock.currentPrice.toFixed(2)}` : '—'}
                   </p>
-                  <p className={`flex items-center gap-1 text-lg mt-2 font-medium ${
-                    stock.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'
-                  }`}>
-                    {stock.changePercent >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
-                    {stock.entryPrice > 0
-                      ? `${(((stock.currentPrice - stock.entryPrice) / stock.entryPrice) * 100 >= 0 ? '+' : '')}${(((stock.currentPrice - stock.entryPrice) / stock.entryPrice) * 100).toFixed(2)}%`
-                      : `${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%`}
-                  </p>
+                  {stock.currentPrice > 0 ? (() => {
+                    const sinceAdded = stock.entryPrice > 0
+                      ? ((stock.currentPrice - stock.entryPrice) / stock.entryPrice) * 100
+                      : null;
+                    const displayChange = sinceAdded ?? stock.changePercent;
+                    const label = sinceAdded !== null ? 'since added' : 'today';
+                    return (
+                      <p className={`flex items-center gap-1 text-lg mt-2 font-medium ${
+                        displayChange >= 0 ? 'text-emerald-400' : 'text-red-400'
+                      }`}>
+                        {displayChange >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                        {displayChange >= 0 ? '+' : ''}{displayChange.toFixed(2)}%
+                        <span className="text-xs text-zinc-500 font-normal ml-1">{label}</span>
+                      </p>
+                    );
+                  })() : (
+                    <p className="text-zinc-500 text-sm mt-2">Loading price...</p>
+                  )}
                 </div>
 
                 <button
-                  onClick={() => window.location.href = '/dashboard/portfolio'}
+                  onClick={() => { window.location.href = `/dashboard/portfolio?symbol=${stock.symbol}`; }}
                   className="mt-6 w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-lg text-sm font-semibold"
                 >
                   Simulate Buy

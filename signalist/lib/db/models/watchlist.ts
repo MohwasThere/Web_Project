@@ -2,7 +2,7 @@ import { InferSchemaType, Model, Schema, model, models } from "mongoose";
 
 const watchlistSchema = new Schema(
   {
-    userId: { type: String, required: true, index: true },
+    userId: { type: String, required: true },
     items: {
       type: [
         new Schema(

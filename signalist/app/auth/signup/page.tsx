@@ -109,7 +109,7 @@ export default function Signup() {
           <div className="flex justify-center mb-6">
             <Image src={testingLogo} alt="Signalist Logo" width={100} height={100} className="rounded-lg object-contain" />
           </div>
-          <h1 className="text-4xl font-bold">Create Account</h1>
+          <h1 className="text-4xl font-bold text-white">Create Account</h1>
           <p className="text-zinc-400 mt-2">Join thousands of smart investors</p>
         </div>
 

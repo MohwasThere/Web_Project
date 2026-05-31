@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
+import { Trash2, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { getLogoCandidates, normalizeTicker } from '@/lib/market/logos';
 
@@ -19,9 +19,7 @@ function StockLogo({ name, symbol }: { name: string; symbol: string }) {
   const logoCandidates = getLogoCandidates(symbol);
   const currentLogo = logoCandidates[logoIndex];
 
-  useEffect(() => {
-    setLogoIndex(0);
-  }, [symbol]);
+  useEffect(() => { setLogoIndex(0); }, [symbol]);
 
   if (!currentLogo) {
     return (
@@ -45,8 +43,7 @@ export default function PortfolioPage() {
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [symbol, setSymbol] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [shares, setShares] = useState(10);
-  const [buyPrice, setBuyPrice] = useState(150);
+  const [shares, setShares] = useState(1);
   const [isLoaded, setIsLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [quotesLoading, setQuotesLoading] = useState(false);
@@ -54,40 +51,45 @@ export default function PortfolioPage() {
 
   const filteredSuggestions = searchResults;
 
+  // ── Pre-fill symbol + live price from ?symbol= query param ──────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const symbolParam = params.get('symbol');
+    if (!symbolParam) return;
+
+    const normalized = normalizeTicker(symbolParam);
+    setSymbol(normalized);
+
+    // symbol pre-fill only — price is fetched live at buy time
+  }, []);
+
+  // ── Search suggestions ───────────────────────────────────────────────────
   useEffect(() => {
     const query = symbol.trim();
-    if (!query) {
-      setSearchResults([]);
-      return;
-    }
+    if (!query) { setSearchResults([]); return; }
 
     const timeout = setTimeout(async () => {
       const response = await fetch(`/api/market/search?query=${encodeURIComponent(query)}`, { cache: 'no-store' });
       if (!response.ok) return;
-
-      const payload = (await response.json()) as {
-        results: Array<{ symbol: string; name: string; exchange: string }>;
-      };
+      const payload = (await response.json()) as { results: Array<{ symbol: string; name: string; exchange: string }> };
       setSearchResults(payload.results ?? []);
     }, 250);
 
     return () => clearTimeout(timeout);
   }, [symbol]);
 
-  // Load from API
+  // ── Load holdings from API ───────────────────────────────────────────────
   useEffect(() => {
     const loadPortfolio = async () => {
       try {
         const response = await fetch('/api/portfolio', { cache: 'no-store' });
         if (!response.ok) return;
-
         const payload = (await response.json()) as { holdings: Holding[] };
         setHoldings(payload.holdings ?? []);
       } finally {
         setIsLoaded(true);
       }
     };
-
     void loadPortfolio();
   }, []);
 
@@ -119,49 +121,72 @@ export default function PortfolioPage() {
     setQuotesLoading(true);
 
     try {
-      const response = await fetch(`/api/market/quotes?symbols=${encodeURIComponent(symbols.join(','))}`, {
-        cache: 'no-store',
-      });
+      const response = await fetch(`/api/market/quotes?symbols=${encodeURIComponent(symbols.join(','))}`, { cache: 'no-store' });
       if (!response.ok) return;
 
-      const payload = (await response.json()) as {
-        quotes: Record<string, { price: number; changePercent: number }>;
-      };
+      const payload = (await response.json()) as { quotes: Record<string, { price: number; changePercent: number }> };
 
-      const next = inputHoldings.map((holding) => {
-        const quote = payload.quotes[normalizeTicker(holding.symbol)];
-        if (!quote) return holding;
-
-        return {
-          ...holding,
-          currentPrice: Number(quote.price.toFixed(2)),
-          changePercent: Number(quote.changePercent.toFixed(2)),
-        };
-      });
-
-      setHoldings(next);
+      setHoldings((prev) =>
+        prev.map((holding) => {
+          const quote = payload.quotes[normalizeTicker(holding.symbol)];
+          if (!quote) return holding;
+          return {
+            ...holding,
+            currentPrice: Number(quote.price.toFixed(2)),
+            changePercent: Number(quote.changePercent.toFixed(2)),
+          };
+        })
+      );
+    } catch {
+      // Network error or server restarting — keep current prices
     } finally {
       setQuotesLoading(false);
     }
   };
 
-  // Refresh with market quotes every 30s
+  // ── Live price refresh every 10 seconds ──────────────────────────────────
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || holdings.length === 0) return;
 
     void refreshQuotes(holdings);
-    const interval = setInterval(() => {
-      void refreshQuotes(holdings);
-    }, 30000);
-
+    const interval = setInterval(() => void refreshQuotes(holdings), 10_000);
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, holdings.length]);
 
-  const addHolding = () => {
-    if (!symbol || shares <= 0 || buyPrice <= 0) return;
+  const addHolding = async () => {
+    if (!symbol || shares <= 0) return;
 
     const normalizedSymbol = normalizeTicker(symbol);
-    const selectedStock = searchResults.find(s => s.symbol === normalizedSymbol);
+
+    if (holdings.some((h) => normalizeTicker(h.symbol) === normalizedSymbol)) {
+      toast.error(`${normalizedSymbol} is already in your portfolio!`);
+      return;
+    }
+
+    // Always fetch the live price at the moment of buying
+    let livePrice = 0;
+    try {
+      const r = await fetch(
+        `/api/market/quotes?symbols=${encodeURIComponent(normalizedSymbol)}`,
+        { cache: 'no-store' }
+      );
+      if (r.ok) {
+        const p = (await r.json()) as { quotes: Record<string, { price: number }> };
+        livePrice = p.quotes[normalizedSymbol]?.price ?? 0;
+      }
+    } catch {}
+
+    if (livePrice <= 0) {
+      toast.error(
+        `No live price found for "${normalizedSymbol}". Check the symbol and try again.`,
+        { duration: 5000 }
+      );
+      return;
+    }
+
+    const buyPrice = Number(livePrice.toFixed(2));
+    const selectedStock = searchResults.find((s) => s.symbol === normalizedSymbol);
 
     const newHolding: Holding = {
       symbol: normalizedSymbol,
@@ -190,7 +215,6 @@ export default function PortfolioPage() {
     void persistPortfolio(next, previous);
   };
 
-  // Calculations
   const totalInvested = holdings.reduce((sum, h) => sum + h.shares * h.buyPrice, 0);
   const totalCurrent = holdings.reduce((sum, h) => sum + h.shares * h.currentPrice, 0);
   const totalPL = totalCurrent - totalInvested;
@@ -200,7 +224,9 @@ export default function PortfolioPage() {
     <div className="min-h-screen bg-[#0A0A0A] text-white p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold mb-2">Portfolio Simulator</h1>
-        <p className="text-emerald-400 mb-8">● Live Market Prices {quotesLoading ? '(Refreshing...)' : '(Updates every 30 seconds)'}</p>
+        <p className="text-emerald-400 mb-8">
+          ● Live Market Prices {quotesLoading ? '(Refreshing...)' : '(Updates every 10 seconds)'}
+        </p>
         <p className={`mb-4 text-sm ${saveStatus === 'error' ? 'text-red-400' : 'text-zinc-500'}`}>
           {saveStatus === 'saving' && 'Saving portfolio...'}
           {saveStatus === 'saved' && 'Portfolio saved'}
@@ -221,7 +247,7 @@ export default function PortfolioPage() {
           <div className={`bg-zinc-900 border border-zinc-800 rounded-xl p-6 font-medium ${totalPL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
             <p className="text-zinc-400">Total Profit / Loss</p>
             <p className="text-3xl mt-2">
-              ${totalPL.toFixed(2)} ({totalPLPercent.toFixed(2)}%)
+              {totalPL >= 0 ? '+' : ''}${totalPL.toFixed(2)} ({totalPLPercent >= 0 ? '+' : ''}{totalPLPercent.toFixed(2)}%)
             </p>
           </div>
         </div>
@@ -229,20 +255,20 @@ export default function PortfolioPage() {
         {/* Buy Section */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 mb-10">
           <h2 className="text-2xl font-semibold mb-6">Buy Stocks (Simulation)</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
               <label className="block text-sm text-zinc-400 mb-2">Symbol</label>
               <div className="relative">
                 <input
                   type="text"
                   value={symbol}
                   onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 150)}
                   onChange={(e) => setSymbol(e.target.value)}
-                  placeholder="Search symbol or company name"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-5 py-3"
+                  placeholder="Search symbol or company (e.g. AAPL, NVDA)"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-5 py-3 focus:outline-none focus:border-blue-500"
                 />
-
                 {isSearchFocused && filteredSuggestions.length > 0 && (
                   <div className="absolute left-0 right-0 mt-2 bg-zinc-900 border border-zinc-700 rounded-lg overflow-hidden z-20">
                     {filteredSuggestions.map((stock) => (
@@ -265,63 +291,57 @@ export default function PortfolioPage() {
               </div>
             </div>
             <div>
-              <label className="block text-sm text-zinc-400 mb-2">Shares</label>
+              <label className="block text-sm text-zinc-400 mb-2">Number of Shares</label>
               <input
                 type="number"
                 value={shares}
                 onChange={(e) => setShares(Number(e.target.value))}
-                min="1"
+                min="0.0001"
+                step="any"
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-5 py-3"
               />
             </div>
-            <div>
-              <label className="block text-sm text-zinc-400 mb-2">Buy Price ($)</label>
-              <input
-                type="number"
-                value={buyPrice}
-                onChange={(e) => setBuyPrice(Number(e.target.value))}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-5 py-3"
-              />
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={addHolding}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 py-3.5 rounded-lg font-semibold"
-              >
-                Buy Stock
-              </button>
-            </div>
+          </div>
+          <p className="text-xs text-zinc-500 mt-3">Price is locked to the live market price at the moment you click Buy.</p>
+          <div className="mt-4">
+            <button
+              onClick={() => void addHolding()}
+              disabled={!symbol || shares <= 0}
+              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed px-10 py-3.5 rounded-lg font-semibold"
+            >
+              Buy Stock
+            </button>
           </div>
         </div>
 
-        {/* Holdings Table with Live Prices */}
+        {/* Holdings Table */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8">
           <h2 className="text-2xl font-semibold mb-6">Your Holdings (Live)</h2>
 
           {holdings.length === 0 ? (
-            <p className="text-center py-16 text-zinc-500">No stocks yet. Buy some above to see live price movement!</p>
+            <p className="text-center py-16 text-zinc-500">No stocks yet. Buy some above to see live P&amp;L!</p>
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-700 text-zinc-400">
+                <tr className="border-b border-zinc-700 text-zinc-400 text-sm">
                   <th className="text-left py-4">Stock</th>
                   <th className="text-right py-4">Shares</th>
                   <th className="text-right py-4">Avg Buy</th>
                   <th className="text-right py-4">Live Price</th>
                   <th className="text-right py-4">Market Value</th>
-                  <th className="text-right py-4">P/L</th>
-                  <th></th>
+                  <th className="text-right py-4">P / L</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
                 {holdings.map((h, i) => {
-                  const value = h.shares * h.currentPrice;
-                  const pl = value - (h.shares * h.buyPrice);
-                  const plPercent = ((h.currentPrice - h.buyPrice) / h.buyPrice) * 100;
+                  const value    = h.shares * h.currentPrice;
+                  const pl       = value - h.shares * h.buyPrice;
+                  const plPct    = ((h.currentPrice - h.buyPrice) / h.buyPrice) * 100;
 
                   return (
-                    <tr key={i} className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                      <td className="py-6">
+                    <tr key={i} className="border-b border-zinc-800 hover:bg-zinc-800/50 transition">
+                      <td className="py-5">
                         <div className="flex items-center gap-3">
                           <StockLogo name={h.name} symbol={h.symbol} />
                           <div>
@@ -330,16 +350,32 @@ export default function PortfolioPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="text-right py-6">{h.shares}</td>
-                      <td className="text-right py-6">${h.buyPrice.toFixed(2)}</td>
-                      <td className="text-right py-6 font-mono">${h.currentPrice.toFixed(2)}</td>
-                      <td className="text-right py-6 font-medium">${value.toFixed(2)}</td>
-                      <td className={`text-right py-6 font-medium ${pl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        ${pl.toFixed(2)} ({plPercent.toFixed(2)}%)
+                      <td className="text-right py-5">{Number(h.shares.toPrecision(6))}</td>
+                      <td className="text-right py-5">${h.buyPrice.toFixed(2)}</td>
+                      <td className="text-right py-5 font-mono font-semibold">
+                        {h.currentPrice > 0 ? `$${h.currentPrice.toFixed(2)}` : '—'}
                       </td>
-                      <td>
-                        <button onClick={() => removeHolding(i)} className="text-red-500 hover:text-red-400">
-                          <Trash2 size={20} />
+                      <td className="text-right py-5 font-medium">
+                        {h.currentPrice > 0 ? `$${value.toFixed(2)}` : '—'}
+                      </td>
+                      <td className={`text-right py-5 font-semibold ${h.currentPrice > 0 ? (pl >= 0 ? 'text-emerald-400' : 'text-red-400') : 'text-zinc-500'}`}>
+                        {h.currentPrice > 0 ? (
+                          <>
+                            <div className="flex items-center justify-end gap-1">
+                              {pl >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                              {pl >= 0 ? '+' : ''}${pl.toFixed(2)}
+                            </div>
+                            <div className="text-xs font-normal opacity-80">
+                              ({plPct >= 0 ? '+' : ''}{plPct.toFixed(2)}%)
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-sm font-normal">Loading...</span>
+                        )}
+                      </td>
+                      <td className="pl-4">
+                        <button onClick={() => removeHolding(i)} className="text-red-500 hover:text-red-400 transition">
+                          <Trash2 size={18} />
                         </button>
                       </td>
                     </tr>

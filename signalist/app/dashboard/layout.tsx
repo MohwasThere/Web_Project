@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import testingLogo from '@/app/logo.svg';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { authClient } from '@/lib/auth-client';
 import { 
   LayoutDashboard, 
   BarChart3, 
@@ -31,6 +32,7 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('https://i.pravatar.cc/150?img=68');
   const [userName, setUserName] = useState('Profile');
@@ -109,8 +111,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         <div className="pt-6 border-t border-zinc-800 mt-auto">
-          <button 
-            onClick={() => window.location.href = '/'}
+          <button
+            onClick={() => {
+              void authClient.signOut().then(() => router.push('/'));
+            }}
             title={collapsed ? 'Logout' : undefined}
             className={`flex items-center gap-3 text-red-400 hover:text-red-500 w-full rounded-lg hover:bg-zinc-900 ${
               collapsed ? 'px-3 py-3 justify-center' : 'px-5 py-3'
