@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+:root {
+  /* App is always dark — do not toggle based on OS preference */
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Trebuchet MS", "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-mono: "Courier New", monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Trebuchet MS", "Segoe UI", Tahoma, Arial, sans-serif;
+}
