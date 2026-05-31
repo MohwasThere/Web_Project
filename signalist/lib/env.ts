@@ -5,6 +5,7 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(1).optional(),
   BETTER_AUTH_API_KEY: z.string().min(1).optional(),
   BETTER_AUTH_URL: z.string().url(),
+  BETTER_AUTH_TRUSTED_ORIGINS: z.string().optional(),
   MONGODB_URI: z.string().min(1),
   MONGODB_DB_NAME: z.string().min(1).default("signalist"),
   GEMINI_API_KEY: z.string().min(1),

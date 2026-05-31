@@ -22,6 +22,18 @@ export async function getAuth(): Promise<AuthInstance> {
     "http://localhost:3000",
     "http://127.0.0.1:3000",
   ];
+
+  const extraOrigins = (env.BETTER_AUTH_TRUSTED_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  for (const origin of extraOrigins) {
+    if (!origins.includes(origin)) {
+      origins.push(origin);
+    }
+  }
+
   if (env.BETTER_AUTH_URL && !origins.includes(env.BETTER_AUTH_URL)) {
     origins.push(env.BETTER_AUTH_URL);
   }
